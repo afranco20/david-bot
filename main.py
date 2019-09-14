@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
-David-Bot
+Module Docstring
 """
 
 __author__ = "Alexander Franco"
 __version__ = "0.1.0"
 __license__ = "MIT"
 
+import src.david
+
 
 def main():
     """ Main entry point of the app """
-    print("hello world")
+    src.david.run()
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from src.cogs import my_commands
 
+
 class MyBot(commands.Bot):
     async def on_ready(self):
         print('Logged on as', self.user)
@@ -25,7 +26,7 @@ class MyBot(commands.Bot):
 
 def run():
     """ Main entry point of the app """
-    token = os.environ.get("DISCORD_BOT_SECRET")
+    token = os.getenv("DISCORD_BOT_SECRET")
 
     client = MyBot(command_prefix=commands.when_mentioned_or('!'))
 

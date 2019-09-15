@@ -7,11 +7,14 @@ __author__ = "Alexander Franco"
 __version__ = "0.1.1"
 __license__ = "MIT"
 
+from dotenv import load_dotenv
+
 import src.david
 
 
 def main():
     """ Main entry point of the app """
+    load_dotenv()
     src.david.run()
 
 

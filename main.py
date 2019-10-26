@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Module Docstring
+David-Bot Bootstrapper
 """
 
 __author__ = "Alexander Franco"
@@ -9,13 +9,13 @@ __license__ = "MIT"
 
 from dotenv import load_dotenv
 
-import src.david
+from src.david import run
 
 
 def main():
     """ Main entry point of the app """
     load_dotenv()
-    src.david.run()
+    run()
 
 
 if __name__ == "__main__":

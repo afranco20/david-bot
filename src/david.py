@@ -2,15 +2,17 @@
 Module Docstring
 """
 
-import os
+from os import getenv
 
-from discord import Client, Game
+from discord import Game
 from discord.ext import commands
 
-from src.cogs import my_commands
+from src.text import Text
+from src.weather import Weather
 
 
-class MyBot(commands.Bot):
+class David(commands.Bot):
+
     async def on_ready(self):
         print('Logged on as', self.user)
         await self.change_presence(activity=Game(name='Making a bot 🤖'))
@@ -18,18 +20,16 @@ class MyBot(commands.Bot):
     async def on_message(self, message):
         if message.content == 'ping':
             await message.channel.send('pong')
-        if message.content == 'testing':
-            await message.channel.send('hi :)')
 
         await self.process_commands(message)
 
 
 def run():
     """ Main entry point of the app """
-    token = os.getenv("DISCORD_BOT_SECRET")
+    token = getenv("DISCORD_BOT_SECRET")
 
-    client = MyBot(command_prefix=commands.when_mentioned_or('!'))
-
-    client.add_cog(my_commands(client))
+    client = David(command_prefix=commands.when_mentioned_or('!'))
+    client.add_cog(Text(client))
+    client.add_cog(Weather(client))
 
     client.run(token)

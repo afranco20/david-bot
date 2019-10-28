@@ -1,7 +1,7 @@
 from json import loads
 from os import getenv
 from urllib import request
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import strftime
 
 from discord import Embed
@@ -13,6 +13,7 @@ class Weather(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api_calls = 0
+        self.last_update = datetime.now() - timedelta(minutes=10)
 
     def generateQuery(self):
         # define query parameters
@@ -28,13 +29,21 @@ class Weather(commands.Cog):
 
         return query
 
-    def rateLimit(self, query):
-        if self.api_calls >= 500:
-            return
-        else:
-            response = request.urlopen(query)
-            self.api_calls = int(response.getheader('X-Forecast-API-Calls'))
-            return response
+    def rateLimit(self):
+        delta = datetime.now() - self.last_update
+        interval = timedelta(minutes=10)
+
+        if self.api_calls >= 200:
+            return False
+        if delta < interval:
+            return False
+
+        return True
+
+    def getResponse(self, update: bool, query: str):
+        response = request.urlopen(query)
+        self.api_calls = int(response.getheader('X-Forecast-API-Calls'))
+        return response
 
     def parseResponse(self, response):
         json_data = loads(response.read())
@@ -44,7 +53,6 @@ class Weather(commands.Cog):
         # f.close()
 
         self.last_update = datetime.fromtimestamp(json_data['currently']['time'])
-        self.last_update = self.last_update.strftime(r'%b %d, %I:%M:%S %p')
 
         properties = ['summary', 'icon', 'apparentTemperature', 'temperature', 'precipProbability']
         data = []
@@ -52,9 +60,11 @@ class Weather(commands.Cog):
         for x in properties:
             data.append(json_data['currently'][x])
 
+        data.append(self.last_update.strftime(r'%b %d, %I:%M %p'))
+
         return data
 
-    def colorizer(self, icon):
+    def colorizer(self, icon: str):
         switch = {
             'clear-day': 0xFFD600,
             'clear-night': 0x90A4AE,
@@ -71,7 +81,6 @@ class Weather(commands.Cog):
             'tornado': 0x42424
         }
 
-        print(icon)
         return switch.get(icon, 0x2ecc71)
 
     def generateEmbed(self, data):
@@ -82,20 +91,24 @@ class Weather(commands.Cog):
         # weather_embed.set_thumbnail(url="...")
 
         names = ['Feels Like', 'Actual', 'Precipitation Probability']
-        fields = list(zip(names, data[2:]))
+        fields = list(zip(names, data[2:-1]))
 
-        for x in fields:
-            weather_embed.add_field(name=x[0], value=round(x[1]))
+        for n, v in fields:
+            weather_embed.add_field(name=n, value=round(v))
 
-        weather_embed.set_footer(text=f"Powered by Dark Sky ◉ Updated: {self.last_update}")
+        weather_embed.set_footer(text=f"Powered by Dark Sky ◉ Updated: {data[-1]}")
 
         return weather_embed
 
     @commands.command()
     async def weather(self, ctx):
         query = self.generateQuery()
-        response = self.rateLimit(query)
-        data = self.parseResponse(response)
-        weather_embed = self.generateEmbed(data)
+        update = self.rateLimit()
+
+        if update:
+            response = self.getResponse(update, query)
+            self.cache = self.parseResponse(response)
+
+        weather_embed = self.generateEmbed(self.cache)
 
         await ctx.send(embed=weather_embed)

@@ -54,11 +54,31 @@ class Weather(commands.Cog):
 
         return data
 
+    def colorizer(self, icon):
+        switch = {
+            'clear-day': 0xFFD600,
+            'clear-night': 0x90A4AE,
+            'rain': 0x2962FF,
+            'snow': 0xFFFFFF,
+            'sleet': 0xB3E5FC,
+            'wind': 0xBDBDBD,
+            'fog': 0x9E9E9E,
+            'cloudy': 0x757575,
+            'partly-cloudy-day': 0xb29400,
+            'partly-cloudy-night': 0x647e8b,
+            'hail': 0x00B0FF,
+            'thunderstorm': 0xFF8F00,
+            'tornado': 0x42424
+        }
+
+        print(icon)
+        return switch.get(icon, 0x2ecc71)
+
     def generateEmbed(self, data):
         summary = data[0]
-        # icon = data[1]
+        color = self.colorizer(data[1])
 
-        weather_embed = Embed(title='Orlando', description=summary, color=0x0091ea)
+        weather_embed = Embed(title='Orlando', description=summary, color=color)
         # weather_embed.set_thumbnail(url="...")
 
         names = ['Feels Like', 'Actual', 'Precipitation Probability']
